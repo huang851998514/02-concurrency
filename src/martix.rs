@@ -2,7 +2,7 @@ use std::ops::{Add, AddAssign, Mul};
 
 use anyhow::Result;
 
-use crate::Vector;
+use crate::{dot_product, Vector};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -18,21 +18,6 @@ impl<T> Martix<T> {
     }
 }
 
-#[allow(dead_code)]
-fn dot_product<T>(a: Vector<T>, b: Vector<T>) -> Result<T>
-where
-    T: Copy + Default + Add<Output = T> + AddAssign + Mul<Output = T>,
-{
-    if a.len() != b.len() {
-        return Err(anyhow::anyhow!("Invalid vector size, a.len != b.len"));
-    }
-    let mut result = T::default();
-    for i in 0..a.len() {
-        result += a[i] * b[i];
-    }
-    Ok(result)
-}
-
 pub fn multiply<T>(a: &Martix<T>, b: &Martix<T>) -> Result<Martix<T>>
 where
     T: Copy + Default + Add<Output = T> + AddAssign + Mul<Output = T>,
@@ -44,9 +29,15 @@ where
     // 矩阵乘法
     for i in 0..a.row {
         for j in 0..b.col {
-            for k in 0..a.col {
-                data[i * b.col + j] += a.data[i * a.col + k] * b.data[k * b.col + j];
-            }
+            let left_vector = Vector::new(&a.data[i * a.col..(i + 1) * a.col]);
+            let right_vector = Vector::new(
+                b.data[j..]
+                    .iter()
+                    .step_by(b.col)
+                    .copied()
+                    .collect::<Vec<_>>(),
+            );
+            data[i * b.col + j] = dot_product(left_vector, right_vector)?;
         }
     }
 
