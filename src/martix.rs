@@ -51,8 +51,9 @@ impl<T> Martix<T> {
     }
 }
 
-impl <T> Mul for Martix<T>
-where T: Copy + Default + Add<Output = T> + AddAssign + Mul<Output = T> + Send + 'static,
+impl<T> Mul for Martix<T>
+where
+    T: Copy + Default + Add<Output = T> + AddAssign + Mul<Output = T> + Send + 'static,
 {
     type Output = Self;
 
